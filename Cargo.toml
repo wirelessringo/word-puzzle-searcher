@@ -1,0 +1,21 @@
+[package]
+name = "word-puzzle-searcher"
+version = "0.1.0"
+authors = ["wirelessringo <wirelessringo@gmail.com>"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+brotli = "3.3.0"
+rayon = "1.2.1"
+structopt = "0.3.5"
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+panic = "abort"
+lto = true
