@@ -72,7 +72,7 @@ impl CountSet {
             })
             .ok_or(CountError::CountOverflow)?;
 
-        Ok(count.try_into()?)
+        count.try_into()
     }
 
     // doesn't perform bounds checks, `index` must be between 0 and 25
