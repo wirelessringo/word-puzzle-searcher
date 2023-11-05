@@ -194,11 +194,13 @@ mod tests {
     use super::*;
 
     #[test]
+    #[rustfmt::skip]
     fn sanity_test() {
         let counted_word = CountSet::from_word("hello").unwrap();
         let count_set = CountSet::try_from([
-            //  a  b  c  d  e  f  g  h  i  j  k  l  m
-            0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 2, 0, //  n  o  p  q  r  s  t  u  v  w  x  y  z
+        //  a  b  c  d  e  f  g  h  i  j  k  l  m
+            0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 2, 0,
+        //  n  o  p  q  r  s  t  u  v  w  x  y  z
             0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         ])
         .unwrap();
@@ -207,8 +209,9 @@ mod tests {
         let counted_word =
             CountSet::from_word("pneumonultramicroscopicsilicovolcanoconosis").unwrap();
         let count_set = CountSet::try_from([
-            //  a  b  c  d  e  f  g  h  i  j  k  l  m
-            2, 0, 6, 0, 1, 0, 0, 0, 5, 0, 0, 3, 2, //  n  o  p  q  r  s  t  u  v  w  x  y  z
+        //  a  b  c  d  e  f  g  h  i  j  k  l  m
+            2, 0, 6, 0, 1, 0, 0, 0, 5, 0, 0, 3, 2,
+        //  n  o  p  q  r  s  t  u  v  w  x  y  z
             4, 8, 2, 0, 2, 4, 1, 2, 1, 0, 0, 0, 0,
         ])
         .unwrap();
