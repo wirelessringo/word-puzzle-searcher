@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
-use rayon::prelude::*;
-use rayon::iter::plumbing::{Consumer, UnindexedConsumer};
 use crate::count::{CountError, CountSet};
+use rayon::iter::plumbing::{Consumer, UnindexedConsumer};
+use rayon::prelude::*;
+use std::collections::{HashMap, HashSet};
 
 type OffsetLength = (usize, usize);
 
@@ -22,7 +22,10 @@ impl Dictionary {
     }
 
     // for use in file reading *only*
-    pub unsafe fn from_raw_parts(word_string: String, word_count: HashMap<OffsetLength, CountSet>) -> Self {
+    pub unsafe fn from_raw_parts(
+        word_string: String,
+        word_count: HashMap<OffsetLength, CountSet>,
+    ) -> Self {
         Self {
             word_string,
             word_count,
@@ -36,7 +39,8 @@ impl Dictionary {
             let len = word.len();
 
             self.word_string.push_str(word);
-            self.word_count.insert((offset, len), CountSet::from_word(word)?);
+            self.word_count
+                .insert((offset, len), CountSet::from_word(word)?);
             self.word_set.insert(Box::from(word));
         }
 
@@ -60,9 +64,7 @@ impl Dictionary {
 
     #[inline]
     pub fn par_iter(&self) -> ParDictionaryIter {
-        ParDictionaryIter {
-            dict: self,
-        }
+        ParDictionaryIter { dict: self }
     }
 }
 
@@ -80,12 +82,14 @@ impl<'a> ParallelIterator for ParDictionaryIter<'a> {
 
     fn drive_unindexed<C>(self, consumer: C) -> <C as Consumer<Self::Item>>::Result
     where
-        C: UnindexedConsumer<Self::Item>
+        C: UnindexedConsumer<Self::Item>,
     {
-        let par_iter = self.dict.word_count
+        let par_iter = self
+            .dict
+            .word_count
             .par_iter()
             .map(|(&(offset, len), set)| DictionaryEntry {
-                word: &self.dict.word_string[offset..(offset+len)],
+                word: &self.dict.word_string[offset..(offset + len)],
                 count_set: set,
             });
 
@@ -129,7 +133,7 @@ mod tests {
         let err = dict.add("brøther").unwrap_err();
 
         match err {
-            CountError::NotAscii => {},
+            CountError::NotAscii => {}
             _ => panic!("Wrong 'not_ascii' error!"),
         }
 
@@ -141,7 +145,7 @@ mod tests {
         let err = dict.add("lööps").unwrap_err();
 
         match err {
-            CountError::NotAscii => {},
+            CountError::NotAscii => {}
             _ => panic!("Wrong 'not_ascii' error!"),
         }
 

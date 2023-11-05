@@ -1,8 +1,8 @@
 //! Letter counting module
 
 use std::convert::{TryFrom, TryInto};
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 
 // function to turn 26-based index to 13-based index/offset pair
 #[inline(always)]
@@ -26,11 +26,16 @@ impl fmt::Display for CountError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use CountError::*;
 
-        write!(f, "{}", match *self {
-            NotAscii => "String contains non-ASCII characters",
-            NotAlphabetic => "String contains characters other than letters (numbers, symbols, etc.)",
-            CountOverflow => "Letter counter exceeded the count limit",
-        })
+        write!(
+            f,
+            "{}",
+            match *self {
+                NotAscii => "String contains non-ASCII characters",
+                NotAlphabetic =>
+                    "String contains characters other than letters (numbers, symbols, etc.)",
+                CountOverflow => "Letter counter exceeded the count limit",
+            }
+        )
     }
 }
 
@@ -107,14 +112,14 @@ impl fmt::Debug for CountSet {
                 self.iter()
                     .enumerate()
                     .filter(|(_, c)| *c > 0)
-                    .map(
-                        |(i, c)| (
+                    .map(|(i, c)| {
+                        (
                             // SAFETY: We are guaranteed to have a valid character value,
                             // since `i + 65` is within the range of ASCII characters.
                             unsafe { core::char::from_u32_unchecked(i as u32 + 65) },
                             c,
                         )
-                    )
+                    }),
             )
             .finish()
     }
@@ -192,22 +197,21 @@ mod tests {
     fn sanity_test() {
         let counted_word = CountSet::from_word("hello").unwrap();
         let count_set = CountSet::try_from([
-        //  a  b  c  d  e  f  g  h  i  j  k  l  m
-            0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 2, 0,
-        //  n  o  p  q  r  s  t  u  v  w  x  y  z
+            //  a  b  c  d  e  f  g  h  i  j  k  l  m
+            0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 2, 0, //  n  o  p  q  r  s  t  u  v  w  x  y  z
             0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ]).unwrap();
+        ])
+        .unwrap();
         assert_eq!(counted_word, count_set);
 
-        let counted_word = CountSet::from_word(
-            "pneumonultramicroscopicsilicovolcanoconosis"
-        ).unwrap();
+        let counted_word =
+            CountSet::from_word("pneumonultramicroscopicsilicovolcanoconosis").unwrap();
         let count_set = CountSet::try_from([
-        //  a  b  c  d  e  f  g  h  i  j  k  l  m
-            2, 0, 6, 0, 1, 0, 0, 0, 5, 0, 0, 3, 2,
-        //  n  o  p  q  r  s  t  u  v  w  x  y  z
+            //  a  b  c  d  e  f  g  h  i  j  k  l  m
+            2, 0, 6, 0, 1, 0, 0, 0, 5, 0, 0, 3, 2, //  n  o  p  q  r  s  t  u  v  w  x  y  z
             4, 8, 2, 0, 2, 4, 1, 2, 1, 0, 0, 0, 0,
-        ]).unwrap();
+        ])
+        .unwrap();
         assert_eq!(counted_word, count_set);
     }
 
@@ -215,7 +219,7 @@ mod tests {
     fn not_ascii() {
         let error = CountSet::from_word("こんにちは").unwrap_err();
         match error {
-            CountError::NotAscii => {},
+            CountError::NotAscii => {}
             _ => panic!("Wrong 'not_ascii' error! {:?}", error),
         }
     }
@@ -224,7 +228,7 @@ mod tests {
     fn not_alphabetic() {
         let error = CountSet::from_word("hello world 123 !@#").unwrap_err();
         match error {
-            CountError::NotAlphabetic => {},
+            CountError::NotAlphabetic => {}
             _ => panic!("Wrong 'not_alphabetic' error! {:?}", error),
         }
     }
@@ -233,7 +237,7 @@ mod tests {
     fn count_overflow() {
         let error = CountSet::from_word("aaaaaaaaaaaaaaaa").unwrap_err();
         match error {
-            CountError::CountOverflow => {},
+            CountError::CountOverflow => {}
             _ => panic!("Wrong 'count_overflow' error! {:?}", error),
         }
     }

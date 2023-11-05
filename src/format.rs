@@ -1,13 +1,13 @@
 //! Dictionary file format reading/parsing and writing
 
-use std::collections::HashMap;
-use std::fmt;
-use std::io::{self, Write, Read, ErrorKind};
-use std::error::Error;
-use std::convert::TryInto;
-use rayon::prelude::*;
 use crate::count::CountSet;
 use crate::dict::Dictionary;
+use rayon::prelude::*;
+use std::collections::HashMap;
+use std::convert::TryInto;
+use std::error::Error;
+use std::fmt;
+use std::io::{self, ErrorKind, Read, Write};
 
 const FORMAT_VERSION: u32 = 1;
 
@@ -32,10 +32,14 @@ impl fmt::Display for ReadError {
             return fmt::Display::fmt(err, f);
         }
 
-        write!(f, "{}", match *self {
-            FormatError => "wrong format",
-            _ => "",
-        })
+        write!(
+            f,
+            "{}",
+            match *self {
+                FormatError => "wrong format",
+                _ => "",
+            }
+        )
     }
 }
 
@@ -74,14 +78,16 @@ pub fn read_dict<R: Read>(reader: &mut R) -> Result<Dictionary, ReadError> {
     let word_string = String::from_utf8(word_string).map_err(|_| ReadError::FormatError)?;
 
     let mut word_count_buf = vec![0; word_count_length * WORD_COUNT_STRIDE];
-    reader.read_exact(&mut word_count_buf)
-        .map_err(|e| if e.kind() == ErrorKind::UnexpectedEof {
+    reader.read_exact(&mut word_count_buf).map_err(|e| {
+        if e.kind() == ErrorKind::UnexpectedEof {
             ReadError::FormatError
         } else {
             ReadError::IoError(e)
-        })?;
+        }
+    })?;
 
-    let word_count = (0..word_count_length).into_par_iter()
+    let word_count = (0..word_count_length)
+        .into_par_iter()
         .map(|i| &word_count_buf[(i * WORD_COUNT_STRIDE)..((i + 1) * WORD_COUNT_STRIDE)])
         .map(|count_element| {
             let offset: [u8; USIZE] = (&count_element[0..USIZE]).try_into().unwrap();
@@ -90,7 +96,9 @@ pub fn read_dict<R: Read>(reader: &mut R) -> Result<Dictionary, ReadError> {
             let len: [u8; USIZE] = (&count_element[USIZE..(USIZE * 2)]).try_into().unwrap();
             let len = usize::from_le_bytes(len);
 
-            let set: [u8; COUNT_SET_SIZE] = (&count_element[(USIZE * 2)..(WORD_COUNT_STRIDE)]).try_into().unwrap();
+            let set: [u8; COUNT_SET_SIZE] = (&count_element[(USIZE * 2)..(WORD_COUNT_STRIDE)])
+                .try_into()
+                .unwrap();
             let set = CountSet::from(set);
 
             ((offset, len), set)
